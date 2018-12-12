@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>stop-cran</Authors>
+    <Description>Provides a bunch of `InjectionParameterValue`-inherited types to convert resolved parameters of another type, as well as retrieve settings from ConfigurationManager.</Description>
+    <Copyright>Apache License 2.0 (stop-cran, 2018)</Copyright>
+    <RepositoryUrl>https://github.com/stop-cran/UnityExtras.Converters</RepositoryUrl>
+    <PackageTags>unity ioc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Unity" Version="5.8.13" />
+  </ItemGroup>
+
+</Project>
