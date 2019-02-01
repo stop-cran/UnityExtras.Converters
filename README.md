@@ -92,6 +92,38 @@ new UnityContainer()
     .ShouldBe(4973);
 ```
 
+Resolved app settings from configuration loaded from another source:
+
+```C#
+new UnityContainer()
+    .RegisterInstance(ConfigurationManager.OpenExeConfiguration(
+        Assembly.GetExecutingAssembly().Location))
+    .RegisterType<ClassB>(
+        new InjectionConstructor(
+            new AppSettingsSectionParameter()["testKey"]
+            ))
+    .Resolve<ClassB>()
+    .Value
+    .ShouldBe("testValue");
+```
+
+Resolved settings from a custom section, registered in the container:
+```
+new UnityContainer()
+.RegisterInstance(new TestConfigurationSection
+{
+    TestInt = 347356
+})
+    .RegisterType<ConstructorMock<int>>(
+        new InjectionConstructor(
+            new ConfigurationSectionParameter<TestConfigurationSection>("someTestSection")
+            .Convert(section => section.TestInt)
+            ))
+    .Resolve<ConstructorMock<int>>()
+    .Value
+    .ShouldBe(347356);
+```
+
 `app.config` file used:
 
 ```XML

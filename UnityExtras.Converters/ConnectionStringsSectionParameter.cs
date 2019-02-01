@@ -1,36 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Linq;
 using System.Reflection;
-using Unity.Builder;
 using Unity.Injection;
-using Unity.Policy;
+using Unity.Resolution;
 
 namespace Unity.Extras
 {
-    public class ConnectionStringsSectionParameter : InjectionParameterValue
+    public class ConnectionStringsSectionParameter : ParameterBase, IResolverFactory<Type>, IResolverFactory<ParameterInfo>
     {
-        private readonly IResolverPolicy policy;
-
-        public ConnectionStringsSectionParameter()
-        {
-            policy = new ConnectionStringsSectionResolverPolicy();
-        }
-
-        public InjectionParameterValue this[string name] =>
+        public ConvertedParameterValue<ConnectionStringsSectionParameter, IReadOnlyDictionary<string, ConnectionStringSettings>, string> this[string name] =>
             this.Convert(settings => settings[name].ConnectionString);
 
-        public override string ParameterTypeName =>
-            typeof(ConnectionStringSettingsCollection).GetTypeInfo().Name;
+        public ResolveDelegate<TContext> GetResolver<TContext>(Type info) where TContext : IResolveContext =>
+            Resolve;
 
-        public override IResolverPolicy GetResolverPolicy(Type typeToBuild) => policy;
+        public ResolveDelegate<TContext> GetResolver<TContext>(ParameterInfo info) where TContext : IResolveContext =>
+            Resolve;
 
-        public override bool MatchesType(Type t) =>
-            t == typeof(ConnectionStringSettingsCollection);
-
-        private sealed class ConnectionStringsSectionResolverPolicy : IResolverPolicy
-        {
-            public object Resolve(IBuilderContext context) =>
-                ConfigurationManager.ConnectionStrings;
-        }
+        private IReadOnlyDictionary<string, ConnectionStringSettings> Resolve<TContext>(ref TContext context) where TContext : IResolveContext =>
+            new ReadOnlyDictionary<string, ConnectionStringSettings>(
+                (context.Container.TryResolve<ConnectionStringsSection>()?.ConnectionStrings
+                ?? context.Container.TryResolve<Configuration>()?.ConnectionStrings.ConnectionStrings
+                ?? ConfigurationManager.ConnectionStrings)
+                .Cast<ConnectionStringSettings>()
+                .ToDictionary(e => e.Name));
     }
 }

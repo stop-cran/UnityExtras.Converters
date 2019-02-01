@@ -1,39 +1,27 @@
 ﻿using System;
 using System.Reflection;
-using Unity.Builder;
 using Unity.Injection;
-using Unity.Policy;
+using Unity.Resolution;
 
 namespace Unity.Extras
 {
-    internal sealed class ConvertedParameterValue<TFrom, TTo> : InjectionParameterValue
+    public sealed class ConvertedParameterValue<TParameter, TFrom, TTo> : ParameterBase,
+        IResolverFactory<Type>, IResolverFactory<ParameterInfo>
+        where TParameter : IResolverFactory<Type>, IResolverFactory<ParameterInfo>
     {
-        private readonly IResolverPolicy policy;
+        private readonly TParameter inner;
+        private readonly Func<TFrom, TTo> converter;
 
-        public ConvertedParameterValue(InjectionParameterValue inner, Func<TFrom, TTo> converter)
+        public ConvertedParameterValue(TParameter inner, Func<TFrom, TTo> converter)
         {
-            policy = new ConvertResolverPolicy(inner.GetResolverPolicy(typeof(TFrom)), converter);
+            this.inner = inner;
+            this.converter = converter;
         }
 
-        public override string ParameterTypeName => typeof(TTo).GetTypeInfo().Name;
+        public ResolveDelegate<TContext> GetResolver<TContext>(Type info) where TContext : IResolveContext =>
+            (ref TContext context) => converter((TFrom)inner.GetResolver<TContext>(info)(ref context));
 
-        public override IResolverPolicy GetResolverPolicy(Type typeToBuild) => policy;
-
-        public override bool MatchesType(Type t) => t == typeof(TTo);
-
-        private sealed class ConvertResolverPolicy : IResolverPolicy
-        {
-            private readonly IResolverPolicy inner;
-            private readonly Func<TFrom, TTo> converter;
-
-            public ConvertResolverPolicy(IResolverPolicy inner, Func<TFrom, TTo> converter)
-            {
-                this.inner = inner;
-                this.converter = converter;
-            }
-
-            public object Resolve(IBuilderContext context) =>
-                converter((TFrom)inner.Resolve(context));
-        }
+        public ResolveDelegate<TContext> GetResolver<TContext>(ParameterInfo info) where TContext : IResolveContext =>
+            (ref TContext context) => converter((TFrom)inner.GetResolver<TContext>(info)(ref context));
     }
 }

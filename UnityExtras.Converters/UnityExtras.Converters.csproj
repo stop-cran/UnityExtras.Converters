@@ -5,14 +5,19 @@
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>stop-cran</Authors>
-    <Description>Provides a bunch of `InjectionParameterValue`-inherited types to convert resolved parameters of another type, as well as retrieve settings from ConfigurationManager.</Description>
-    <Copyright>Apache License 2.0 (stop-cran, 2018)</Copyright>
-    <RepositoryUrl>https://github.com/stop-cran/UnityExtras.Converters</RepositoryUrl>
+    <Description>Provides a bunch of resolver factories to convert resolved parameters of another type, as well as to retrieve settings from app config.</Description>
+    <Copyright>Apache License 2.0 (stop-cran, 2018-2019)</Copyright>
+    <RepositoryUrl></RepositoryUrl>
     <PackageTags>unity ioc</PackageTags>
+    <Version>1.1.0</Version>
+    <PackageProjectUrl>https://github.com/stop-cran/UnityExtras.Converters</PackageProjectUrl>
+    <PackageReleaseNotes>Supported Unity 5.9.3.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Unity" Version="5.8.13" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+    <PackageReference Include="Unity" Version="5.9.3" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,11 @@
 ﻿using NUnit.Framework;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
 using Unity;
 using Unity.Extras;
 using Unity.Injection;
@@ -15,7 +17,7 @@ namespace UnityExtras.Converters.Tests
     {
         [Test]
         public void ShouldResolveCustomSection() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterType<ConstructorMock<TestConfigurationSection>>(
                     new InjectionConstructor(
                         new ConfigurationSectionParameter<TestConfigurationSection>("someTestSection")
@@ -26,7 +28,7 @@ namespace UnityExtras.Converters.Tests
 
         [Test]
         public void ShouldRetrieveIntValueFromCustomSection() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterType<ConstructorMock<int>>(
                     new InjectionConstructor(
                         new ConfigurationSectionParameter<TestConfigurationSection>("someTestSection")
@@ -38,7 +40,7 @@ namespace UnityExtras.Converters.Tests
 
         [Test]
         public void ShouldRetrieveStringValueFromCustomSection() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterType<ConstructorMock<string>>(
                     new InjectionConstructor(
                         new ConfigurationSectionParameter<TestConfigurationSection>("someTestSection")
@@ -49,19 +51,35 @@ namespace UnityExtras.Converters.Tests
                 .ShouldBe("d2r_6Hdr");
 
         [Test]
-        public void ShouldResolveAppSettingsSection() =>
+        public void ShouldRetrieveStringValueFromCustomSectionRegistered() =>
             new UnityContainer()
-                .RegisterType<ConstructorMock<NameValueCollection>>(
+            .RegisterInstance(new TestConfigurationSection
+            {
+                TestInt = 347356
+            })
+                .RegisterType<ConstructorMock<int>>(
+                    new InjectionConstructor(
+                        new ConfigurationSectionParameter<TestConfigurationSection>("someTestSection")
+                        .Convert(section => section.TestInt)
+                        ))
+                .Resolve<ConstructorMock<int>>()
+                .Value
+                .ShouldBe(347356);
+
+        [Test]
+        public void ShouldResolveAppSettingsSection() =>
+            CreateContainer()
+                .RegisterType<ConstructorMock<IReadOnlyDictionary<string, string>>>(
                     new InjectionConstructor(
                         new AppSettingsSectionParameter()
                         ))
-                .Resolve<ConstructorMock<NameValueCollection>>()
+                .Resolve<ConstructorMock<IReadOnlyDictionary<string, string>>>()
                 .Value
                 .ShouldNotBeNull();
 
         [Test]
         public void ShouldRetrieveAppSetting() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterType<ConstructorMock<string>>(
                     new InjectionConstructor(
                         new AppSettingsSectionParameter()["testKey"]
@@ -72,7 +90,7 @@ namespace UnityExtras.Converters.Tests
 
         [Test]
         public void ShouldConvertAppSetting() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterType<ConstructorMock<int>>(
                     new InjectionConstructor(
                         new AppSettingsSectionParameter()
@@ -84,7 +102,7 @@ namespace UnityExtras.Converters.Tests
 
         [Test]
         public void ShouldConvertResolvedParameter() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterInstance(9)
                 .RegisterType<ConstructorMock<int>>(
                     new InjectionConstructor(
@@ -95,7 +113,7 @@ namespace UnityExtras.Converters.Tests
 
         [Test]
         public void ShouldConvertResolvedParameter2() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterInstance(9)
                 .RegisterType<ConstructorMock<ConstructorMock<int>>>(
                     new InjectionConstructor(
@@ -107,36 +125,19 @@ namespace UnityExtras.Converters.Tests
                 .ShouldBe(13);
 
         [Test]
-        public void ShouldConvertResolvedArrayParameter() =>
-            new UnityContainer()
-                .RegisterInstance("a", 9)
-                .RegisterInstance("b", 15)
-                .RegisterInstance("c", 33)
-                .RegisterType<ConstructorMock<int>>(
-                    new InjectionConstructor(
-                        new ResolvedArrayParameter<int>(
-                            new ResolvedParameter<int>("a"),
-                            new ResolvedParameter<int>("b")
-                            ).Convert(ii => ii.Sum() / 3)
-                        ))
-                .Resolve<ConstructorMock<int>>()
-                .Value
-                .ShouldBe(8);
-
-        [Test]
         public void ShouldResolveConnectionStringsSection() =>
-            new UnityContainer()
-                .RegisterType<ConstructorMock<ConnectionStringSettingsCollection>>(
+            CreateContainer()
+                .RegisterType<ConstructorMock<IReadOnlyDictionary<string, ConnectionStringSettings>>>(
                     new InjectionConstructor(
                         new ConnectionStringsSectionParameter()
                         ))
-                .Resolve<ConstructorMock<ConnectionStringSettingsCollection>>()
+                .Resolve<ConstructorMock<IReadOnlyDictionary<string, ConnectionStringSettings>>>()
                 .Value
                 .ShouldNotBeNull();
 
         [Test]
         public void ShouldRetrieveConnectionString() =>
-            new UnityContainer()
+            CreateContainer()
                 .RegisterType<ConstructorMock<string>>(
                     new InjectionConstructor(
                         new ConnectionStringsSectionParameter()["testConnection"]
@@ -147,7 +148,7 @@ namespace UnityExtras.Converters.Tests
 
         [Test]
         public void ShouldConvertConnectionString() =>
-           new UnityContainer()
+           CreateContainer()
                .RegisterType<ConstructorMock<string>>(
                    new InjectionConstructor(
                        new ConnectionStringsSectionParameter()
@@ -156,5 +157,10 @@ namespace UnityExtras.Converters.Tests
                .Resolve<ConstructorMock<string>>()
                .Value
                .ShouldBe("testProvider");
+
+        public IUnityContainer CreateContainer() =>
+            new UnityContainer()
+                .RegisterInstance(ConfigurationManager.OpenExeConfiguration(
+                    Assembly.GetExecutingAssembly().Location));
     }
 }

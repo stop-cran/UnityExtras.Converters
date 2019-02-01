@@ -1,39 +1,30 @@
 ﻿using System;
 using System.Configuration;
 using System.Reflection;
-using Unity.Builder;
 using Unity.Injection;
-using Unity.Policy;
+using Unity.Resolution;
 
 namespace Unity.Extras
 {
-    public class ConfigurationSectionParameter<TSection> : InjectionParameterValue
+    public class ConfigurationSectionParameter<TSection> : ParameterBase, IResolverFactory<Type>, IResolverFactory<ParameterInfo>
         where TSection : ConfigurationSection
     {
-        private readonly IResolverPolicy policy;
+        private readonly string section;
 
-        public ConfigurationSectionParameter(string section)
+        public ConfigurationSectionParameter(string section) : base(typeof(TSection))
         {
-            policy = new ConfigurationSectionResolverPolicy(section);
+            this.section = section;
         }
 
-        public override string ParameterTypeName => typeof(TSection).GetTypeInfo().Name;
+        public ResolveDelegate<TContext> GetResolver<TContext>(Type info) where TContext : IResolveContext =>
+            Resolve;
 
-        public override IResolverPolicy GetResolverPolicy(Type typeToBuild) => policy;
+        public ResolveDelegate<TContext> GetResolver<TContext>(ParameterInfo info) where TContext : IResolveContext =>
+            Resolve;
 
-        public override bool MatchesType(Type t) => t == typeof(TSection);
-
-        private sealed class ConfigurationSectionResolverPolicy : IResolverPolicy
-        {
-            private readonly string section;
-
-            public ConfigurationSectionResolverPolicy(string section)
-            {
-                this.section = section;
-            }
-
-            public object Resolve(IBuilderContext context) =>
-                (TSection)ConfigurationManager.GetSection(section);
-        }
+        private TSection Resolve<TContext>(ref TContext context) where TContext : IResolveContext =>
+            context.Container.TryResolve<TSection>()
+                ?? (TSection)context.Container.TryResolve<Configuration>()?.GetSection(section)
+                ?? (TSection)ConfigurationManager.GetSection(section);
     }
 }

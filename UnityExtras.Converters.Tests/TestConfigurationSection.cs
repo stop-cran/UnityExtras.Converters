@@ -11,7 +11,6 @@ namespace UnityExtras.Converters.Tests
             set { this[nameof(TestString)] = value; }
         }
 
-
         [ConfigurationProperty(nameof(TestInt), DefaultValue = 1234)]
         public int TestInt
         {
