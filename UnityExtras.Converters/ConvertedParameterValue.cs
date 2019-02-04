@@ -12,7 +12,7 @@ namespace Unity.Extras
         private readonly TParameter inner;
         private readonly Func<TFrom, TTo> converter;
 
-        public ConvertedParameterValue(TParameter inner, Func<TFrom, TTo> converter)
+        public ConvertedParameterValue(TParameter inner, Func<TFrom, TTo> converter) : base(typeof(TTo))
         {
             this.inner = inner;
             this.converter = converter;
@@ -22,6 +22,6 @@ namespace Unity.Extras
             (ref TContext context) => converter((TFrom)inner.GetResolver<TContext>(info)(ref context));
 
         public ResolveDelegate<TContext> GetResolver<TContext>(ParameterInfo info) where TContext : IResolveContext =>
-            (ref TContext context) => converter((TFrom)inner.GetResolver<TContext>(info)(ref context));
+            (ref TContext context) => converter((TFrom)inner.GetResolver<TContext>(typeof(TFrom))(ref context));
     }
 }

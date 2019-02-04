@@ -9,7 +9,7 @@
     <Copyright>Apache License 2.0 (stop-cran, 2018-2019)</Copyright>
     <RepositoryUrl></RepositoryUrl>
     <PackageTags>unity ioc</PackageTags>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <PackageProjectUrl>https://github.com/stop-cran/UnityExtras.Converters</PackageProjectUrl>
     <PackageReleaseNotes>Supported Unity 5.9.3.</PackageReleaseNotes>
   </PropertyGroup>

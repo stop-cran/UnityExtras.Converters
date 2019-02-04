@@ -11,6 +11,9 @@ namespace Unity.Extras
 {
     public class ConnectionStringsSectionParameter : ParameterBase, IResolverFactory<Type>, IResolverFactory<ParameterInfo>
     {
+        public ConnectionStringsSectionParameter() : base(typeof(IReadOnlyDictionary<string, ConnectionStringSettings>))
+        { }
+
         public ConvertedParameterValue<ConnectionStringsSectionParameter, IReadOnlyDictionary<string, ConnectionStringSettings>, string> this[string name] =>
             this.Convert(settings => settings[name].ConnectionString);
 
