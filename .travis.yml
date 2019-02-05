@@ -1,10 +1,16 @@
 language: csharp
 mono: none
-dotnet: 2.0.0
+dotnet: 2.1
 solution: UnityExtras.Converters.sln
 
+env:
+  - COVERALLS_REPO_TOKEN=XfA9uRqpMcwtqJPEXMKkUMUCxfyg6G55U
+
 install:
-  - dotnet tool install coveralls.net --version 1.0.0 --tool-path tools
+  - dotnet tool install coverlet.console --tool-path tools
+  - dotnet tool install coveralls.net --tool-path tools
+
 script:
   - dotnet test UnityExtras.Converters.Tests
-  - .\tools\csmacnz.Coveralls --opencover -i coverage.xml --useRelativePaths
+  - ./tools/coverlet UnityExtras.Converters.Tests/bin/Debug/netcoreapp2.1/UnityExtras.Converters.Tests.dll --target dotnet --targetargs "test UnityExtras.Converters.Tests/UnityExtras.Converters.Tests.csproj" -f opencover
+  - ./tools/csmacnz.Coveralls --opencover -i coverage.opencover.xml --useRelativePaths
