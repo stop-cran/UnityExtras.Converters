@@ -125,6 +125,24 @@ namespace UnityExtras.Converters.Tests
                 .ShouldBe(13);
 
         [Test]
+        public void ShouldConvertResolvedArrayParameter() =>
+            new UnityContainer()
+                .AddNewExtension<Diagnostic>()
+                .RegisterInstance("a", 9)
+                .RegisterInstance("b", 15)
+                .RegisterInstance("c", 33)
+                .RegisterType<ConstructorMock<int>>(
+                    new InjectionConstructor(
+                        new ResolvedArrayParameter<int>(
+                            new ResolvedParameter<int>("a"),
+                            new ResolvedParameter<int>("b")
+                            ).Convert(ii => ii.Sum() / 3)
+                        ))
+                .Resolve<ConstructorMock<int>>()
+                .Value
+                .ShouldBe(8);
+
+        [Test]
         public void ShouldResolveConnectionStringsSection() =>
             CreateContainer()
                 .RegisterType<ConstructorMock<IReadOnlyDictionary<string, ConnectionStringSettings>>>(
@@ -160,6 +178,7 @@ namespace UnityExtras.Converters.Tests
 
         public IUnityContainer CreateContainer() =>
             new UnityContainer()
+                .AddNewExtension<Diagnostic>()
                 .RegisterInstance(ConfigurationManager.OpenExeConfiguration(
                     Assembly.GetExecutingAssembly().Location));
     }
